@@ -1,0 +1,20 @@
+{
+    "name": "magicoli/sweet-dreams",
+    "description": "Alternative for the legendary Sony Dream Machine ICF-CL70 2009",
+    "version": "1.0.0-dev",
+    "license": "AGPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Olivier van Helden",
+            "homepage": "https://magiiic.com"
+        }
+    ],
+    "require": {},
+    "require-dev": {},
+    "repositories": [],
+    "autoload": {
+        "psr-4": {
+            "Magicoli\\SweetDreams\\": "src/"
+        }
+    }
+}

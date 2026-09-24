@@ -1,0 +1,79 @@
+## Common
+
+*~
+#*#
+\#*\#
+.DS_Store
+**/.env
+.env
+.envrc
+.env.*
+.envrc.*
+!.env*.example
+*.backup
+node_modules/
+tmp/
+vendor/
+
+## Editors
+
+.codex/
+.crush/
+.crush.json
+.cursor/
+
+## AI-related
+
+.agents
+.claude
+.github/skills
+.gemini
+.github/copilot-instructions.md
+.junie
+.mcp.json
+.vibe
+.vscode
+.zed
+.phpactor.json
+CLAUDE.md
+GEMINI.md
+opencode.json
+
+## Config
+
+# Do not ignore config/ in Laravel
+# config/**
+# !config/**example.*
+etc/**
+!etc/README.md
+.lerd.yaml
+auth.json
+deploy.*ml
+deploy.maml
+deploy.php
+herd.yml
+
+## Generated content
+
+.venv/
+venv/
+build/
+!/build/README.md
+__pycache__/
+
+## Data
+
+backups/**
+data/**
+!/data/.keep
+!/data/README.md
+logs/**
+storage/**
+.bashunit/**
+*.bak
+*.cache
+*.log
+*.pid
+*.pid.lock
+*.sql
+*.sqlite
