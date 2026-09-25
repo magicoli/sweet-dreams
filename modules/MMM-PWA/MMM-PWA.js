@@ -6,10 +6,15 @@ Module.register("MMM-PWA", {
 		this.injectHead();
 		this.registerServiceWorker();
 		this.requestWakeLock();
+		this.requestFullscreen();
 
 		document.addEventListener("visibilitychange", () => {
 			if (document.visibilityState === "visible") this.requestWakeLock();
 		});
+		// display: "fullscreen" in the manifest doesn't reliably hide Android's
+		// system nav bar on its own (varies by OEM skin) - the Fullscreen API
+		// call above often needs a user gesture, so retry on the first tap too.
+		document.addEventListener("click", () => this.requestFullscreen(), { once: true });
 	},
 
 	// No visible UI of its own.
@@ -18,6 +23,8 @@ Module.register("MMM-PWA", {
 	},
 
 	injectHead() {
+		document.title = "Sweet Dreams";
+
 		const link = document.createElement("link");
 		link.rel = "manifest";
 		link.href = "/modules/MMM-PWA/manifest.json";
@@ -62,5 +69,12 @@ Module.register("MMM-PWA", {
 		navigator.wakeLock.request("screen").catch((error) => {
 			Log.error("MMM-PWA: wake lock request failed", error);
 		});
+	},
+
+	requestFullscreen() {
+		if (document.fullscreenElement || !document.documentElement.requestFullscreen) return;
+		// Silently ignored on failure: the first call often lacks the user
+		// activation some browsers require, the click listener retries it.
+		document.documentElement.requestFullscreen().catch(() => {});
 	}
 });
