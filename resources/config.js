@@ -12,6 +12,12 @@ export default {
 	// server. Relative to node_modules/magicmirror, where the build writes.
 	watchTargets: ["config/config.js", "config/custom.css"],
 
+	// Pages reload once the restarted server is back (dev changes, deploys).
+	// server:watch's own RELOAD signal is sent to the server it is about to
+	// kill, so it rarely reaches the browser.
+	reloadAfterServerRestart: true,
+	checkServerInterval: 5 * 1000,
+
 	modules: [
 		{ module: "MMM-PWA" },
 	],

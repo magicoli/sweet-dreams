@@ -3,12 +3,13 @@
 
 .module.clock {
     .digital {
-        .date {
-            font-size: 2vw;
+        .date,
+        .date.medium {
+            font-size: 3.25vw;
+        }
+
+        .time {
+            font-size: 16vw;
         }
     }
-}
-
-.module.clock .digital .time {
-    font-size: 16vw;
 }
