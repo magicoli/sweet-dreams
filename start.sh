@@ -1,16 +1,19 @@
 #!/bin/sh
-# Wires our own files into the untouched magicmirror/ submodule, then starts
+# Wires our own files into the untouched magicmirror npm package, then starts
 # MagicMirror in server-only mode (no Electron/display needed in the container).
 set -e
 
-ln -sfn ../../config/config.js magicmirror/config/config.js
+[ -d node_modules ] || npm install --omit=dev
+
+MM=node_modules/magicmirror
+mkdir -p "$MM/config" "$MM/modules"
+ln -sfn ../../../config/config.js "$MM/config/config.js"
 
 for dir in modules/*/; do
 	[ -d "$dir" ] || continue
 	name=$(basename "$dir")
-	ln -sfn "../../modules/$name" "magicmirror/modules/$name"
+	ln -sfn "../../../modules/$name" "$MM/modules/$name"
 done
 
-cd magicmirror
-[ -d node_modules ] || npm run install-mm
+cd "$MM"
 exec npm run server
