@@ -5,3 +5,7 @@ user=www-data
 autostart=true
 autorestart=true
 stopsignal=TERM
+; supervisor doesn't spawn through a login shell, so it never sees a PATH
+; nvm/fnm set up in .bashrc - point it at the right node/npm explicitly.
+; Find yours with `nvm which <version>` (strip the trailing "/node").
+environment=PATH="/path/to/nvm/versions/node/vXX.X.X/bin:%(ENV_PATH)s"
