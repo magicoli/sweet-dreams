@@ -1,0 +1,7 @@
+[program:sweet-dreams]
+command=/bin/sh start.sh
+directory=/home/magic/domains/sweet-dreams.magiiic.com/app/current
+user=magic
+autostart=true
+autorestart=true
+stopsignal=TERM

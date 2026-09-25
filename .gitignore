@@ -46,6 +46,11 @@ opencode.json
 # !config/**example.*
 etc/**
 !etc/README.md
+# Un-ignore directories first so git actually traverses into them - without
+# this line, etc/** blocks descent and the *.example exception below never
+# gets evaluated for files in subdirectories (confirmed with git check-ignore).
+!etc/**/
+!etc/**/*.example
 .lerd.yaml
 auth.json
 deploy.*ml
