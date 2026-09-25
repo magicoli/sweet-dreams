@@ -1,6 +1,7 @@
 {
     "name": "sweet-dreams",
     "description": "Alternative for the legendary Sony Dream Machine ICF-CL70 2009",
+    "type": "commonjs",
     "version": "1.0.0-dev",
     "license": "AGPL-3.0-or-later",
     "author": "Olivier van Helden",
