@@ -41,26 +41,20 @@ opencode.json
 
 ## Config
 
-# Do not ignore config/ in Laravel
-# config/**
-# !config/**example.*
-
-# MagicMirror config: server-specific setting, not part of the repo or the
-# deploy - each environment keeps its own, started from config.js.sample.
-config/config.js
+# config/ is usually per host, except in Laravel apps
+config/**
+!config/*.sample
 etc/**
-!etc/README.md
-# Un-ignore directories first so git actually traverses into them - without
-# this line, etc/** blocks descent and the *.example exception below never
-# gets evaluated for files in subdirectories (confirmed with git check-ignore).
 !etc/**/
-!etc/**/*.example
+!etc/README.md
 .lerd.yaml
 auth.json
-deploy.*ml
 deploy.maml
 deploy.php
 herd.yml
+
+# Keep .example files whereever
+!**/**.example
 
 ## Generated content
 

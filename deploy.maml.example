@@ -12,6 +12,7 @@
     identity_file: "~/.ssh/id_rsa"
     shared_files: [
       "config/config.js"
+      "config/custom.css"
     ]
   }
 
