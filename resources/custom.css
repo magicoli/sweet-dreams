@@ -1,0 +1,14 @@
+/* Common Sweet Dreams styles. Local overrides go in config/custom.css,
+ * which is appended after this file. */
+
+.module.clock {
+    .digital {
+        .date {
+            font-size: 2vw;
+        }
+    }
+}
+
+.module.clock .digital .time {
+    font-size: 16vw;
+}

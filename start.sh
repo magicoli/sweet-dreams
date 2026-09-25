@@ -30,7 +30,7 @@ export MM_PORT
 # Not start script responsibility to install dependencies
 [ -d node_modules/magicmirror ] || exit 1
 
-rsync -Wavz "${BASE_DIR}/config/" "${MM_BASE_DIR}/config/"
+npm run build -- --outDir "${MM_BASE_DIR}/config"
 rsync -Wavz "${BASE_DIR}/modules/" "${MM_BASE_DIR}/modules/"
 
 cd node_modules/magicmirror

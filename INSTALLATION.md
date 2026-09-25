@@ -29,7 +29,7 @@ npm -v # Should print "10.9.9".
 MagicMirror's config is a server-specific setting, not part of the repo or the deploy. Create it once per environment:
 
 ```bash
-cp config/config.js.sample config/config.js
+cp config/config.js.example config/config.js
 ```
 
 Edit it for the real location, weather provider, etc.
@@ -58,7 +58,7 @@ Copy `etc/caddy/sweet-dreams.caddyfile.example` to your real Caddy sites directo
 
 ```bash
 mkdir -p {{deploy_path}}/shared/config
-cp config/config.js.sample {{deploy_path}}/shared/config/config.js
+cp config/config.js.example {{deploy_path}}/shared/config/config.js
 ```
 
 Then edit that file for the real deployment (location, weather provider, etc.), same as the local `config/config.js` above.
