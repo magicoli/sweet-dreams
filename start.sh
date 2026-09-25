@@ -13,8 +13,12 @@ log() {
 
 log Starting $PGM
 
+if [ -f ~/.nvm/nvm.sh ]; then
+	. ~/.nvm/nvm.sh
+fi
+
 if [ -f "$BASE_DIR/.env" ]; then
-	source "$BASE_DIR/.env"
+	. "$BASE_DIR/.env"
 fi
 
 APP_ENV="${APP_ENV:-local}"
