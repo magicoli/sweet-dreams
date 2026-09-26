@@ -1,8 +1,7 @@
 # lerd mounts the project directory at its host path and sets --workdir
-# automatically, so the MagicMirror submodule source is never copied into
-# this image - it's runtime-mounted, kept an untouched checkout.
+# automatically, so nothing from the project is copied into this image.
 FROM node:22-alpine
 
 RUN apk add --no-cache git python3 make g++
 
-CMD ["sh", "start.sh"]
+CMD ["npm", "start"]

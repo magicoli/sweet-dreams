@@ -1,5 +1,6 @@
 [program:sweet-dreams]
-command=/bin/sh start.sh
+; env resolves npm through the PATH below (command itself doesn't).
+command=/usr/bin/env npm start
 directory=/var/www/sweet-dreams/
 user=www-data
 autostart=true

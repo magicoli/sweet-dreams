@@ -1,9 +1,3 @@
-# Reference only - not currently used. sweet-dreams runs under supervisor
-# (see etc/supervisor/), reusing what's already installed on the server for
-# other projects. Kept here in case that ever needs revisiting: MagicMirror
-# is a single long-running process, not a worker/queue, so it doesn't
-# actually need supervisor's process-group features - plain systemd would
-# do the job without the extra dependency.
 [Unit]
 Description=Sweet Dreams (MagicMirror)
 After=network.target
@@ -12,11 +6,12 @@ After=network.target
 Type=simple
 User=www-data
 WorkingDirectory=/var/www/sweet-dreams/
-# systemd doesn't spawn through a login shell either, so nvm/fnm's PATH
+# systemd doesn't spawn through a login shell, so nvm/fnm's PATH
 # change in .bashrc never reaches it. Find yours with `nvm which <version>`
 # (strip the trailing "/node").
 Environment=PATH=/path/to/nvm/versions/node/vXX.X.X/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ExecStart=/bin/sh start.sh
+# env resolves npm through the PATH above (ExecStart itself doesn't).
+ExecStart=/usr/bin/env npm start
 Restart=on-failure
 
 [Install]
