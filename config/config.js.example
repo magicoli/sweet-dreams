@@ -1,19 +1,15 @@
-/* Local personalization, built with resources/config.js into
+/* Local personalization, merged over resources/common.js into
  * node_modules/magicmirror/config/config.js (npm run build).
+ * Common modules come first, the ones below are appended.
  * Copy to config/config.js and adjust.
  *
  * Module options: https://docs.magicmirror.builders/modules/configuration.html
  */
-import base from "../resources/config.js";
-
 export default {
-	...base,
-
 	language: "en",
 	locale: "en-US",
 
 	modules: [
-		...base.modules,
 		{
 			module: "alert",
 		},
