@@ -44,6 +44,39 @@ Do not attempt to start or restart remote services (ComfyUI, dev servers, etc.) 
 
 If a change is committed before testing, mark it `(untested)` so it's easy to find in the log.
 
+Depending on the type of projects, adopt one of the following tracks. Some projects may use a combination of tracks.
+
+**PHP (including Laravel)**: [Pest](https://pestphp.com) 4/5 with Orchestra Testbench.
+
+- Run with `vendor/bin/pest`; filter while iterating with `vendor/bin/pest --filter=SomeTest`
+- Test files live under `tests/Feature/` and `tests/Unit/`, plus `tests/ArchTest.php` for architecture constraints; `tests/TestCase.php` and `tests/Pest.php` set up the Testbench environment
+- Keep tests focused on observable package behavior (public API, service provider wiring, commands, config, published resources), not implementation details
+- `composer test` also runs static analysis and lint checks alongside the Pest suite — see `AGENTS.md` § Quick Commands and the `package-testing` skill
+- use short descriptive test names, group with `describe()`
+- never use `it()`, use `test()` instead (it is noisy for nothing)
+- do not repeat conditions, make smart use of `depends()`, `skip()` and return values
+- Only use `beforeEach()`, `afterEach()`, `beforeAll()`, `afterAll()` for tasks that really need to be repeated, favor `depends()` and return values or bootstrap if it can be shared between tests
+- use bootstrap to setup testing environment (like temporary web server, test database seeding...), avoid relaunching it for each test
+
+**Node.js package (JavaScript/TypeScript)**: [Vitest](https://vitest.dev), or Node's built-in test runner (`node --test`) for projects without Vite.
+
+- Run with `npm test`; filter while iterating with `npx vitest -t "some test"`
+- Test files are named `*.test.js` (or `*.test.ts`), next to the code they test or under `tests/`
+- Keep tests focused on observable behavior (exports, command output, built files), not implementation details
+
+**Pure shell scripts** (any bash tooling this package ships — e.g. the planned `bin/` CLI and external shell projects integration): [bashunit](https://bashunit.typeddevs.com), included in `tests/lib/`. To install or update it:
+
+```bash
+curl -sL https://bashunit.typeddevs.com/install.sh | bash -s -- tests/lib 0.50.1
+```
+
+- Run all tests with `tests/lib/bashunit tests/`
+- Tests use the testing environment (`.env.testing` or `tests/.env`), created from `tests/.env.example` on first run by `tests/bootstrap.sh`
+- Test files are named `*-test.sh`, test functions `test_*`
+- Tests must never write outside a temporary folder (e.g. `mktemp -d`)
+
+Pest's `*Test.php`, Vitest's `*.test.js` and bashunit's `*-test.sh` files can share the same `tests/` tree without colliding — each runner only picks up its own naming pattern.
+
 ### Documentation
 
 - README.md documents the features and usage of the project for the end users
@@ -83,6 +116,7 @@ The MCP surface is **twelve grouped tools**, each driven by an `action` argument
 ### DNS modes
 
 Lerd has two install-time DNS modes recorded in `~/.config/lerd/config.yaml`:
+
 - **Managed (default)**: `dns.enabled: true`, `dns.tld: test`. Sites at `*.test` via lerd-dns + mkcert; `site` `tls_enable` works.
 - **Disabled**: `dns.enabled: false`, `dns.tld: localhost`. Sites at `*.localhost` via RFC 6761; no mkcert CA, TLS toggling unavailable.
 
@@ -93,7 +127,9 @@ Read `diag` `action: "status"` for `dns.tld` and `dns.enabled` instead of assumi
 Twelve grouped tools, each selecting behaviour via `action`.
 
 #### `site` — sites and their configuration
+
 Actions: `list` (discover sites — CALL FIRST), `link`, `unlink`, `domain_add`, `domain_remove`, `group_assign`, `group_unassign`, `group_label`, `group_db`, `group_list`, `tls_enable`, `tls_disable`, `tls_renew`, `php`, `node`, `pause`, `unpause`, `restart`, `rebuild`, `runtime`, `nginx_read`, `nginx_write`, `nginx_reset`, `park`, `unpark`.
+
 - `link` registers a directory; non-PHP sites need `.lerd.yaml` `container.port` + a Containerfile first, or they register as PHP (wrong)
 - `link` runs `lerd link` and returns its output verbatim, so read the reply. It will NOT start a `proxy.command` dev server (`command not approved`); ask the user to run `lerd link --yes`
 - `domain_*` take a domain without the `.test` TLD; you can't remove the last domain
@@ -106,7 +142,9 @@ Actions: `list` (discover sites — CALL FIRST), `link`, `unlink`, `domain_add`,
 - `park` registers a parent dir and auto-registers every PHP project under it; `unpark` reverses it (project files kept)
 
 #### `service` — built-in & custom services
+
 Actions: `start`, `stop`, `restart`, `pin`, `unpin`, `update`, `rollback`, `migrate`, `remove`, `reinstall`, `add`, `expose`, `port`, `env`, `config_read`, `config_write`, `config_restore`, `config_reset`, `config_list_backups`, `preset_list`, `preset_search`, `preset_install`, `check_updates`, `entities`, `entity_action`.
+
 - `update` pulls a newer image (in-strategy); `migrate` dumps + restores across a cross-strategy upgrade; `reinstall` with `reset_data: true` wipes and reprovisions; `remove` with `remove_data: true` renames the data dir aside. Both wipes snapshot every database first (`pre-remove-<ts>` / `pre-reset-data-<ts>`, restore with `db` `restore` + `all_databases`): the renamed data dir only reads back under the image that wrote it, so the dump is the recovery path. A snapshot that fails stops the wipe; `no_snapshot: true` goes ahead without one
 - `preset_install`, `update`, `migrate`, `rollback` and `reinstall` disclose an image they would fetch instead of fetching it: the reply names it and its size, nothing is downloaded, and a repeat with `confirm: true` goes ahead. Relay the size first, it is the user's bandwidth. An image already on the machine is never disclosed
 - `stop` marks the service paused — `lerd start` skips it until started again; `pin` keeps it always running
@@ -118,7 +156,9 @@ Actions: `start`, `stop`, `restart`, `pin`, `unpin`, `update`, `rollback`, `migr
 - `config_*` read/write/restore/reset a service's runtime tuning override
 
 #### `db` — databases
+
 Actions: `list`, `set`, `move`, `create`, `export`, `import`, `snapshot`, `snapshots`, `restore`, `snapshot_delete`, `snapshot_keep`, `auto`, `auto_set`, `extension_list`, `extension_add`.
+
 - `list` reports an engine's databases with sizes; `service` picks the engine, else it resolves from the project. No introspect command, nothing to report
 - `set` picks the project DB (`database`: sqlite, mysql, postgres, or a family alternate like mariadb / postgres-pgvector / mysql-5-7); persists to `.lerd.yaml`, writes the keys the framework declares for that engine, starts the service, creates the DB + `_testing`. sqlite is a wiring the framework declares, not a service: nothing is installed or started and it is not among the site's services, so never report it as stopped or missing. Moving between engines clears the framework's cache, which otherwise serves errors from definitions built against the old database
 - `move` migrates sites between two installed same-family services (`from`/`to`, `sites: [...]` or `all: true`) and repoints each `.env`; source data is left intact
@@ -129,14 +169,18 @@ Actions: `list`, `set`, `move`, `create`, `export`, `import`, `snapshot`, `snaps
 - retention only ever drops snapshots the schedule took, never one taken by hand. `snapshots` reports `auto`, `kept` and an automatic one's `expires_at` (`estimated: true` when that date moves with the schedule rather than being an age cutoff); `snapshot_keep` pins one so retention leaves it alone (`kept: false` releases it). Check the expiry before offering a snapshot as a rollback point
 
 #### `env` — the file the framework actually reads
+
 Actions: `setup`, `check`, `override`.
+
 - `setup` configures services, DBs, APP_KEY and APP_URL; on a fresh Laravel clone call `db` `set` first to move off sqlite, then `env setup`, then ALWAYS `framework setup` or migrations never run
 - the file and format come from the framework definition, not from an assumption of dotenv: a `.env`, WordPress's `wp-config.php` constants, a returned PHP array (Magento's `env.php`, CakePHP's `app_local.php`) or `$var[...]` assignments (Drupal's `settings.php`). Only changed statements are rewritten, so comments and hand edits survive, and a read-only settings file is unhardened for the write and restored after. Never hand-edit these to wire a service, and never assume Laravel's `DB_CONNECTION`/`DB_DATABASE` mean anything on a project that does not declare them
 - `check` compares `.env` against `.env.example`. A key a dotenv file sets twice is a `site_doctor` finding, not an error here: lerd reads the first and Symfony reads the last, so the two disagree silently until someone picks one
 - `override` manages the personal, gitignored `.env.lerd_override` (its `set` KEY=VALUE win over lerd defaults; `LERD_EXTERNAL_SERVICES=<svc,svc>` marks vars lerd writes but won't start)
 
 #### `runtime` — PHP/Node versions & extensions
+
 Actions: `versions`, `node_install`, `node_uninstall`, `node_manager`, `php_list`, `ext_list`, `ext_add`, `ext_remove`, `ports_list`, `ports_add`, `ports_remove`, `ini_read`, `ini_write`, `ini_reset`.
+
 - `ext_add`/`ext_remove` change one declared set applying to EVERY PHP version, so a site keeps its extensions across a version change. They rebuild one version's FPM container now (slow); others rebuild on next use. `ext_add` accepts `apk_deps` for extra Alpine build packages
 - `ext_list` reports the declared set plus, per version: has it, predates the set (rebuild fixes), or cannot load it (rebuild won't). Never assume a declared ext is present: `mongodb` needs 8.1+, 7.4/8.0 are Alpine 3.16
 - `node_manager` with no argument reports the version manager lerd drives, whether nvm is present and whether lerd manages Node at all; with `manager: fnm|nvm` it switches, which also rewrites the PATH shims and regenerates host workers
@@ -150,7 +194,9 @@ Actions: `versions`, `node_install`, `node_uninstall`, `node_manager`, `php_list
 - **bun**: lerd never installs or version-manages bun. On the host, JS install/dev/build run through bun when the project is a bun project (its lockfile or `bunfig.toml`) or when Node is unmanaged, no system Node exists, and bun is present. CLI-only: `lerd node:manage`/`node:unmanage` opt in or out of lerd-managed Node (unmanage drops fnm versions, never a user's nvm ones), `lerd js:runtime [bun|node|auto]` pins one site's runtime, and `lerd php:bun install|update|version` manages an in-container bun for `lerd shell`. These are host operations, not container exec actions.
 
 #### `worker` — background workers
+
 Actions: `list` (CALL FIRST), `start`, `stop`, `add`, `remove`, `health`, `heal`, `mode_get`, `mode_set`, and the framework workers `queue_start`, `queue_stop`, `horizon_start`, `horizon_stop`, `reverb_start`, `reverb_stop`, `schedule_start`, `schedule_stop`, `stripe_start`, `stripe_stop`, `stripe_config`.
+
 - call `list` to discover a site's workers before `start`; pass `branch` to target a per-worktree unit
 - use `horizon_*` instead of `queue_*` when laravel/horizon is installed (mutually exclusive); `queue_start` needs Redis running when `QUEUE_CONNECTION=redis`
 - `list` reports each worker's tunable `options` (name, definition default, project value); `start`/`queue_start` take them back as `options: ["name=value"]`, persisted to `.lerd.yaml`, so pass one only to change it; an undeclared name is refused
@@ -162,14 +208,18 @@ Actions: `list` (CALL FIRST), `start`, `stop`, `add`, `remove`, `health`, `heal`
 - **Idle-suspend (CLI-only)**: `lerd idle on/off` toggles activity-driven suspension globally; suspended workers stop after the idle timeout (`lerd idle timeout <dur>`) and resume on the next request/CLI/MCP/file-save. `lerd idle pin/unpin <site>` exempts a site; `lerd idle status` reports policy and last-active. A worker shown as suspended is healthy, not failed, so do not `heal` it
 
 #### `exec` — run tooling in the PHP-FPM container
+
 Actions: `artisan` (Laravel), `console` (other frameworks), `composer`, `vendor_bins`, `vendor_run`, `commands_list`, `commands_run`, `command_add`, `command_remove`.
+
 - `artisan`/`console`/`composer` take `args` (array); tinker must use `--execute=<code>` for non-interactive use
 - `vendor_run` is the right way to run project tooling (pest, phpunit, pint, phpstan, rector) — call `vendor_bins` first to discover what's installed, then `vendor_run` with `bin` + `args`; prefer it over `composer exec`. `lerd cpx <package>` (CLI-only) runs a Composer package's binary without adding it to the project
 - `commands_*`/`command_*` list, run, add and remove the on-demand commands in a site's `.lerd.yaml` `commands:` block; `commands_run` needs `force: true` for confirm-gated commands
 - **composer over git SSH (CLI-only)**: when `composer` needs a private repo reachable only over SSH, `lerd auth ssh` starts a shared ssh-agent container and loads the host's `~/.ssh/id_*` (or named keys) so passphrase-protected keys work in the FPM container; `lerd auth ssh --list` shows loaded keys, `--remove` flushes them. Keys live only in agent memory and clear on machine restart
 
 #### `framework` — framework definitions & scaffolding
+
 Actions: `list`, `add`, `remove`, `prune`, `search`, `update`, `project_new`, `setup`.
+
 - `add` with `name: "laravel"` merges custom workers/setup into the built-in framework; a worker or command gated on a composer package is declared once in the store as `packages/<vendor>-<name>.yaml` and merged onto the resolved definition, so it is not always in the framework's own file
 - `remove` refuses to drop a definition a linked site still uses (pass `force: true` to override); `prune` removes every definition no site uses
 - `search`/`update` use the community store; definitions auto-fetch on link, so `update` is the manual refresh (no `name` refreshes the catalogue and all installed definitions; with `name` it fetches that one, auto-detecting version from `composer.lock`)
@@ -177,7 +227,9 @@ Actions: `list`, `add`, `remove`, `prune`, `search`, `update`, `project_new`, `s
 - `setup` runs the framework's post-install steps (migrations, storage:link…) — MANDATORY after `env setup` on new/cloned projects; idempotent
 
 #### `diag` — diagnostics & observability
+
 Actions: `status`, `doctor`, `doctor_fix`, `site_doctor`, `which`, `check`, `dns_diagnose`, `bug_report`, `analyze_queries`, `route_timing`, `optimize_route`, `dumps_recent`, `dumps_status`, `dumps_clear`, `dumps_toggle`, `profiler_toggle`, `profiler_status`, `profiler_clear`, `profiler_report`, `xdebug_on`, `xdebug_off`, `xdebug_status`.
+
 - `status` (DNS/nginx/FPM/watcher/tools health) and `doctor` (JSON findings, each tagged with a fix tier) are the first stops when something is broken; `dns_diagnose` walks the DNS chain
 - `doctor_fix` applies the safe (non-heavy, non-sudo) repairs for environment findings; package installs, `lerd install` and `lerd cleanup` stay manual
 - `site_doctor` runs framework-agnostic app checks for one site (env file and drift, app key, composer/node install and lock, `composer audit`/`npm audit`, PHP range, a `slow_routes` warning for routes whose p95 runs well above the site's typical time, plus the framework's own); pass `site` or `path`, defaults to cwd. It is read-only: a failing check carries a `severity` and often a `fix` naming the command to run yourself. Host-side fixes (starting a declared service, rewriting a drifted vhost, repointing or creating a database, deleting undeclared worker units) belong to `lerd site:doctor --fix`, which the user runs. `slow_routes` is the exception, read from the watcher's timing snapshot with no command fix: profile the route instead (`profiler_toggle`)
@@ -194,22 +246,28 @@ Actions: `status`, `doctor`, `doctor_fix`, `site_doctor`, `which`, `check`, `dns
 - **disk cleanup (CLI-only)**: `lerd cleanup` reclaims podman disk from orphaned lerd images (`--dry-run` to preview, `--deep` for the aggressive tier); a daily safe-tier sweep plus post-rebuild reaping runs automatically, toggled with `lerd cleanup auto on|off|status`. Its preview is a floor, a run usually frees more. macOS: `lerd machine reclaim` returns disk the Podman Machine VM freed to the host
 
 #### `logs` — read logs from any source, filtered
+
 Actions: `sources`, `fetch`. Debug without opening files by hand.
+
 - `sources` lists every queryable source for the site plus shared infra: `app:<file>` (framework log files), `fpm`, `worker:<name>` (queue/horizon/schedule/custom), and the globals `nginx`, `dns`, `watcher`, `ui`, services, `php<ver>`. Call it first to learn the names
 - `fetch source=<name>` reads one source. Filter with `grep` (regex, falls back to literal substring), `since`/`until` (relative like `15m`/`1h`/`2h30m`, or a timestamp), `level` (app logs only: error/warning/info/debug), and `lines` (default 50)
 - streaming is polling: every `fetch` returns an opaque `cursor`; call again with `since=<cursor>` (or `cursor=<cursor>`) to get only the new lines. The cursor format differs per backend, so treat it as opaque and echo it back
 - entries come back chronological (oldest first). Raw logs with no timestamps ignore `since`/`level` and just return the last N; a not-running container returns partial output, not an error
 
 #### `worktree` — git worktrees
+
 Actions: `list`, `add`, `remove`, `wait`, `db_isolate`, `db_share`.
+
 - `add` installs deps and offers an asset-worker / build-step prompt; secured sites get `*.<branch>.<site>.test` wildcard cert SANs + nginx `server_name` automatically. It waits for setup and reports `provisioned` (`false` + note means still running, not failed; `timeout_seconds` default 300)
-- `wait` is that readiness check alone, for a worktree made with plain `git worktree add`. **Never** judge readiness from the tree: `node_modules/` exists from the first extracted package and composer fills *existing* `vendor/<org>/` dirs, so both read as finished mid-install, and racing the watcher is how `vendor/` ends up with no `autoload.php`
+- `wait` is that readiness check alone, for a worktree made with plain `git worktree add`. **Never** judge readiness from the tree: `node_modules/` exists from the first extracted package and composer fills _existing_ `vendor/<org>/` dirs, so both read as finished mid-install, and racing the watcher is how `vendor/` ends up with no `autoload.php`
 - `db_isolate` gives a worktree its own database (seed via `source`: empty|main|<branch>); `db_share` points it back at the main; `remove` keeps an isolated DB unless `keep_db: false`
 - a framework definition can declare what its worktrees need (an isolated database, what it is cloned from, console commands to run once it is in place), so `add` does that work rather than leaving it to be run by hand
 - request timing is recorded per worktree; pass `branch` to `route_timing`, `optimize_route` and `dumps_recent` to read one branch's traffic
 
 #### `workspace` — group sites for display
+
 Actions: `list`, `create`, `rename`, `delete`, `assign`, `move`.
+
 - a workspace is a **display-only** bucket of sites, shown in the dashboard sidebar and the TUI. It never touches nginx, domains, certificates or `.env`. This is not the same thing as the `site` tool's `group_*` actions, which nest a real site under another's subdomain and regenerate vhosts and certs — reach for `group_*` when a site should be served at `<label>.<main>.test`, and for `workspace` when the user just wants their site list organised
 - `assign` takes `sites` (names or domains) and a `workspace`, creating it if new; `workspace: "none"` ungroups them. `move` reorders a workspace with a zero-based `position`
 - `delete` drops the workspace and ungroups its members; no site is touched

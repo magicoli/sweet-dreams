@@ -1,0 +1,12 @@
+/* Sweet Dreams styles for MagicMirror²: large clock digits.
+ * Copy to MagicMirror's config/custom.css and adjust.
+ * Plain CSS, no nesting: older tablets don't support it.
+ */
+.module.clock .digital .date,
+.module.clock .digital .date.medium {
+    font-size: 3.25vw;
+}
+
+.module.clock .digital .time {
+    font-size: 16vw;
+}

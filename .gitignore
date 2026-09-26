@@ -44,6 +44,7 @@ opencode.json
 # config/ is usually per host, except in Laravel apps
 config/**
 !config/*.sample
+!config/sweet-dreams-*.png
 etc/**
 !etc/**/
 !etc/README.md
@@ -80,3 +81,8 @@ storage/**
 *.pid.lock
 *.sql
 *.sqlite
+
+## Project-specific rules
+/modules/**
+!/modules/README.md
+!/modules/MMM-ProgressiveWebApp/

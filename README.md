@@ -1,25 +1,22 @@
 # Sweet Dreams
 
-[![Version](https://img.shields.io/badge/Version-1.0.0-blue)](CHANGELOG.md)
-![Stable](https://img.shields.io/github/v/release/magicoli/sweet-dreams?label=Stable)
-![GitHub commits since latest release](https://img.shields.io/github/commits-since/magicoli/sweet-dreams/latest?label=Commits%20since)
-![Node](https://img.shields.io/badge/NodeJS-22-blue)
-[![License](https://img.shields.io/badge/License-AGPL--3.0--or--later-green)](LICENSE)
-![GitHub Downloads](https://img.shields.io/github/downloads/magicoli/sweet-dreams/total?label=GitHub%20dl)
-![NPM Downloads](https://img.shields.io/npm/dt/sweet-dreams?label=NPM%20dl)
+![Latest Release](https://img.shields.io/github/v/release/magicoli/sweet-dreams?label=latest&include_prereleases)
+![Stable](https://img.shields.io/github/v/release/magicoli/sweet-dreams?label=stable&color=green)
+![Node](https://img.shields.io/badge/node.js-22-blue)
+[![License](https://img.shields.io/badge/license-AGPL--3.0-552b55)](LICENSE)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/magicoli/sweet-dreams/latest)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/magicoli/sweet-dreams/total)
 
 Tablet-based alternative for the legendary Sony Dream Machine ICF-CL70 2009.
 
-Sweet Dreams turns a spare tablet into a bedside clock. A server runs [MagicMirror²](https://magicmirror.builders), and the tablet shows it fullscreen, installed as a web app.
+Sweet Dreams turns a spare tablet into a bedside clock. It is a recipe for a standard [MagicMirror²](https://magicmirror.builders) install: the [MMM-ProgressiveWebApp](https://github.com/magicoli/MMM-ProgressiveWebApp) module shows it fullscreen on the tablet, installed as an app, and this repo provides a ready-made config and styles.
 
 ## Features
 
 - Large, elegant clock display, in landscape or portrait
 - Any MagicMirror² module: weather, calendar, news feeds, compliments...
-- Installable web app: own name and icon, fullscreen, screen kept awake
-- Works on older tablets: modern CSS is converted at build time
-- Common settings shared by all installs, local personalization kept apart
-- MagicMirror² stays an untouched npm dependency, easy to update
+- Installable app: own name and icon, fullscreen, screen kept awake
+- Plain MagicMirror² install, updated the usual way
 
 ## Requirements
 
@@ -29,13 +26,20 @@ Sweet Dreams turns a spare tablet into a bedside clock. A server runs [MagicMirr
 
 ## Installation
 
+Install MagicMirror² and the MMM-ProgressiveWebApp module:
+
 ```bash
-npm install
-cp config/config.js.example config/config.js
-npm start
+./setup.sh
 ```
 
-MagicMirror² is then served on port 8080 (set `MM_PORT` to change it). See [INSTALLATION.md](INSTALLATION.md) for a production server: service, reverse proxy and deployment.
+Then start it from the MagicMirror folder:
+
+```bash
+cd lib/MagicMirror
+npm run server
+```
+
+MagicMirror² is then served on port 8080 by default, open http://localhost:8080. See [INSTALLATION.md](INSTALLATION.md) for a production server: service, reverse proxy and deployment.
 
 ## Tablet setup
 
@@ -48,12 +52,12 @@ Launch it from the home screen icon: it opens fullscreen and keeps the screen aw
 
 ## Customization
 
-Local settings live in `config/`, not tracked by git:
+Everything lives in MagicMirror's `config/` folder:
 
-- `config/config.js`: language, locale and the modules to display, with their positions and options. They are added after the common modules. See [MagicMirror² module configuration](https://docs.magicmirror.builders/modules/configuration.html).
-- `config/custom.css`: style overrides, applied after the common styles. Nested CSS is fine.
+- `config/config.js`: language, locale and the modules to display, with their positions and options. See [MagicMirror² module configuration](https://docs.magicmirror.builders/modules/configuration.html).
+- `config/custom.css`: styles. Stick to plain CSS (no nesting), older tablets don't support it.
 
-Common settings and styles live in `resources/`, custom modules in `modules/`. Changes apply on the next `npm start`.
+Third-party modules, like [alternative clocks](https://modules.magicmirror.builders/?search=clock), go in `modules/`. Restart the server after a change, or run `npm run server:watch` to restart it automatically.
 
 ## Roadmap
 
@@ -65,4 +69,5 @@ Common settings and styles live in `resources/`, custom modules in `modules/`. C
 
 ## References
 
-- https://github.com/magicmirrororg/magicmirror
+- https://github.com/MagicMirrorOrg/MagicMirror
+- https://github.com/magicoli/MMM-ProgressiveWebApp

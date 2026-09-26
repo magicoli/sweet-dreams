@@ -1,9 +1,38 @@
 # Development rules
 
+## Sweet Dreams
+
+Sweet Dreams is a recipe for a standard MagicMirror² install, not an application: no code, no build.
+
+- `config/`: files to copy into MagicMirror's `config/` folder (`config.js.example`, `custom.css.example`, app icons)
+- `etc/`: example system configs, same structure as `/etc`
+- `deploy.maml.example`: Deployer config deploying MagicMirror² itself
+
+The installable app comes from the [MMM-ProgressiveWebApp](https://github.com/magicoli/MMM-ProgressiveWebApp) module, developed in its own repo.
+
+This repo is not required on production, this is mostly a shortcut with my own take on the ideal setup. MagicMirror can be setup the normal way, while adding the `MMM-ProgressiveWebApp` module from this repo. To test the recipe locally:
+
+```bash
+git submodule sync
+git submodule update --init --recursive
+cd lib/MagicMirror
+npm run install-mm
+cp ../../config/config.js.example config/config.js
+cd modules
+ln -sf ../../../lib/MMM-* ./
+npm run server:watch   # restarts on config changes, open pages reload
+```
+
+- Styles are plain CSS, no nesting: older tablets don't support it
+- No tests yet
+
+---
+
 ## General rules
 
+- **Avoid writing custom code for common needs**: always look for available solutions (current framework, extensions, modules, libraries...)
+- Smart use of composer and npm packages, only code parts that are specific to this project, use well-known libraries when available.
 - Smart use of classes and autoload
-- Smart use of composer packages, only code parts that are specific to this project, use well-known libraries when available.
 
 ## Coding rules
 
@@ -15,41 +44,21 @@
 - If the same value is used twice or more, it probably requires a variable or property
 - Never include inline scripts or css in html. Scripts and styles are saved in separated files, main files for general use, or specific files for parts needed only in specific situations
 - Never include direct styling classes in html and templates, use business classes, favor standard business classes provided by the framework
-- Never include direct links to css and js in generated code, use standard Laravel/Livewire/Filament methods
+- Never include direct links to css and js in generated code, use standard framework methods or the bundler (e.g. Vite)
 
 ## Code style
 
-- English for all code, comments, and documentation (keep only user's language for chat, not in saved files)
+- English for all code, comments, and documentation
 - Prefer simple, well-tested constructs. Avoid global mutable state.
 - Reuse existing libraries and patterns already in the project.
 - Small, focused unit tests for new logic.
-- Do not hard-wrap prose in Markdown files: write each paragraph as a single line and let the editor and terminal soft-wrap it. Both handle it fine, and a hard wrap only makes diffs noisier and paragraphs harder to reflow when edited. Headings, lists, tables, and code blocks are structural, not prose — this rule is about paragraph text only.
+- Do not hard-wrap prose (Markdown files, comments, git messages...): write each paragraph as a single line and let the editor and terminal soft-wrap it. Hard wrap only makes diffs noisier and paragraphs harder to reflow when edited.
 
-## Tests
+### Testing
 
-Two tracks, for two kinds of code — neither replaces the other.
+Use the testing track appropriate for the project type. All tests belong to `tests/` folder. Prefer pest for PHP, vitest for JavaScript/TypeScript, and bashunit for shell scripts.
 
-**The Laravel package (PHP)**: [Pest](https://pestphp.com) 4/5 with Orchestra Testbench.
-
-- Run with `vendor/bin/pest`; filter while iterating with `vendor/bin/pest --filter=SomeTest`
-- Test files live under `tests/Feature/` and `tests/Unit/`, plus `tests/ArchTest.php` for architecture constraints; `tests/TestCase.php` and `tests/Pest.php` set up the Testbench environment
-- Keep tests focused on observable package behavior (public API, service provider wiring, commands, config, published resources), not implementation details
-- `composer test` also runs static analysis and lint checks alongside the Pest suite — see `AGENTS.md` § Quick Commands and the `package-testing` skill
-
-**Pure shell scripts** (any bash tooling this package ships — e.g. the planned `bin/` CLI and external shell projects integration): [bashunit](https://bashunit.typeddevs.com), included in `tests/lib/`. To install or update it:
-
-```bash
-curl -sL https://bashunit.typeddevs.com/install.sh | bash -s -- tests/lib 0.50.1
-```
-
-- Run all tests with `tests/lib/bashunit tests/`
-- Tests use the testing environment (`.env.testing` or `tests/.env`), created from `tests/.env.example` on first run by `tests/bootstrap.sh`
-- Test files are named `*-test.sh`, test functions `test_*`
-- Tests must never write outside a temporary folder (e.g. `mktemp -d`)
-
-Pest's `*Test.php` files and bashunit's `*-test.sh` files can share the same `tests/` tree without colliding — each runner only picks up its own naming pattern.
-
-The Python/PHP tooling under `dev/` (invoice generation, Schematron validation) is neither: it is a standalone sandbox (see `README.md`), verified by hand by re-running `dev/generate-invoice.php` and the two `dev/validate-*/validate.py` scripts against `dev/examples/`.
+If a change is committed before testing, mark it `(untested)` so it's easy to find in the log.
 
 ## Commit message format
 
@@ -89,6 +98,7 @@ Packages developed alongside this one (e.g. `magicoli/bash-tools`) are declared 
 - During development, require `dev-dev`: Composer symlinks the local copy
 - `@dev` does not select the local copy, always use the exact `dev-dev` constraint
 - The switch only depends on the require constraint: any other constraint (`dev-master`, `^1.0`...) is installed from Packagist or VCS
+- npm has no such fallback, so never declare `file:` dependencies in `package.json`: `npm link ../package` symlinks the local copy into `node_modules/` without touching `package.json`, and the next `npm install` restores the registry version
 
 ## Version releases
 
@@ -105,6 +115,7 @@ v1.2.3 Main change if applicable
 - create a version release only when the version is fully tested and approved: bumping the version number in files does not mean the version must be released yet
 - Be concise, full explanation can be found in git history
 - Omit small patches and fixes, focus on essential features
-- Make sure to update all relevant files (.version, README.md, composer.json... ) and update CHANGELOG.md with the exact same description
+- Make sure to update all relevant files (.version, README.md, composer.json, package.json... ) and update CHANGELOG.md with the exact same description
+- For npm packages, `npm version 1.2.3 --no-git-tag-version` updates `package.json` and `package-lock.json` without committing or tagging
 - Replace `dev-dev` requires with released constraints (e.g. `^1.0`) and run `composer update` so that `composer.lock` no longer points to local paths, otherwise the release cannot be installed on another machine. Switch back to `dev-dev` after the release
 - after commit, add a tag with "v1.2.3" (version number) as tag name and the exact same message as commit

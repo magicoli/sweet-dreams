@@ -1,0 +1,3 @@
+[submodule "lib/MagicMirror"]
+	path = lib/MagicMirror
+	url = https://github.com/MagicMirrorOrg/MagicMirror.git

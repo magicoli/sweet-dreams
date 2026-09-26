@@ -1,7 +1,0 @@
-# lerd mounts the project directory at its host path and sets --workdir
-# automatically, so nothing from the project is copied into this image.
-FROM node:22-alpine
-
-RUN apk add --no-cache git python3 make g++
-
-CMD ["npm", "start"]

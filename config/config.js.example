@@ -1,15 +1,36 @@
-/* Local personalization, merged over resources/common.js into
- * node_modules/magicmirror/config/config.js (npm run build).
- * Common modules come first, the ones below are appended.
- * Copy to config/config.js and adjust.
+/* Sweet Dreams config for MagicMirror².
+ * Copy to MagicMirror's config/config.js and adjust.
  *
- * Module options: https://docs.magicmirror.builders/modules/configuration.html
+ * Options: https://docs.magicmirror.builders/configuration/introduction.html
+ * Modules: https://docs.magicmirror.builders/modules/configuration.html
  */
-export default {
+let config = {
+	// Reachable by the reverse proxy, which handles access control.
+	address: "0.0.0.0",
+	ipWhitelist: [],
+
+	// Pages reload once a restarted server is back (updates, config changes).
+	reloadAfterServerRestart: true,
+	checkServerInterval: 5 * 1000,
+	// Restarts the server on change with `npm run server:watch`.
+	watchTargets: ["config/config.js", "config/custom.css"],
+
 	language: "en",
 	locale: "en-US",
 
 	modules: [
+		{
+			module: "MMM-ProgressiveWebApp",
+			config: {
+				name: "Sweet Dreams",
+				themeColor: "#0b0b10",
+				backgroundColor: "#0b0b10",
+				icons: [
+					{ src: "config/sweet-dreams-192.png", sizes: "192x192", type: "image/png" },
+					{ src: "config/sweet-dreams-512.png", sizes: "512x512", type: "image/png" },
+				],
+			},
+		},
 		{
 			module: "alert",
 		},
@@ -78,3 +99,8 @@ export default {
 		},
 	],
 };
+
+/*************** DO NOT EDIT THE LINE BELOW ***************/
+if (typeof module !== "undefined") {
+	module.exports = config;
+}

@@ -1,18 +1,18 @@
 [Unit]
-Description=Sweet Dreams (MagicMirror)
-After=network.target
+Description="Sweet Dreams (MagicMirror)"
+Wants=network-online.target
+After=network-online.target
 
 [Service]
 Type=simple
-User=www-data
-WorkingDirectory=/var/www/sweet-dreams/
-# systemd doesn't spawn through a login shell, so nvm/fnm's PATH
-# change in .bashrc never reaches it. Find yours with `nvm which <version>`
-# (strip the trailing "/node").
+ExecStart=/usr/bin/env npm run server
+WorkingDirectory=/path/to/MagicMirror/
 Environment=PATH=/path/to/nvm/versions/node/vXX.X.X/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-# env resolves npm through the PATH above (ExecStart itself doesn't).
-ExecStart=/usr/bin/env npm start
+User=www-data
 Restart=on-failure
+
+StandardOutput=append:/var/log/sweet-dreams.log
+StandardError=append:/var/log/sweet-dreams.log
 
 [Install]
 WantedBy=multi-user.target

@@ -24,24 +24,32 @@ node -v # Should print "v22.23.3".
 npm -v # Should print "10.9.9".
 ```
 
-## Config
+## MagicMirror² and config
 
-MagicMirror's config is a server-specific setting, not part of the repo or the deploy. Create it once per environment:
+Install MagicMirror², the MMM-ProgressiveWebApp module and the Sweet Dreams config as described in [README.md](README.md#installation). Edit `config/config.js` for the real location, weather provider, modules, etc.
+
+See the [MagicMirror² documentation](https://docs.magicmirror.builders/getting-started/installation.html) for other install and update methods.
+
+## Service
+
+### systemd
+
+Copy `etc/systemd/system/sweet-dreams.service.example` to `/etc/systemd/system/sweet-dreams.service`, then fill in:
+
+- `User`: the user owning the MagicMirror folder
+- `WorkingDirectory`: the MagicMirror folder, or the deploy path's `current/` (e.g. `~/domains/example.com/app/current`, expanded)
+- `Environment=PATH=`: the real node/npm bin directory first. systemd doesn't spawn through a login shell, so it never sees a PATH nvm sets up in `.bashrc`. Find yours with `nvm which 22` (strip the trailing `/node`)
 
 ```bash
-cp config/config.js.example config/config.js
+sudo systemctl daemon-reload
+sudo systemctl enable --now sweet-dreams
 ```
 
-Edit it for the real location, weather provider, etc.
+Run `daemon-reload` again after each change to the unit file.
 
-## Supervisor
+### supervisor
 
-Copy `etc/supervisor/conf.d/sweet-dreams.conf.example` to your real supervisor config directory (see `etc/README.md` for this server's convention), then fill in:
-- `directory`: the deploy path's `current/` (e.g. `~/domains/sweet-dreams.magiiic.com/app/current`)
-- `user`: the deploy user
-- `environment`: `PATH=` needs the real node/npm bin directory prepended. Supervisor doesn't spawn through a login shell, so it never sees a PATH nvm/fnm sets up in `.bashrc`. Find yours with `nvm which 22` (strip the trailing `/node`).
-
-By default `supervisorctl` needs root. Rather than granting broad sudo, give the deploy user access to supervisor's own control socket instead (in `supervisord.conf`'s `[unix_http_server]` section: `chmod=0770` + `chown=<user>:<group>`) - then `supervisorctl restart sweet-dreams` works directly, no sudo involved.
+If you already use supervisor, copy `etc/supervisor/conf.d/sweet-dreams.conf.example` to supervisor's config directory instead, and fill in `directory`, `user` and `environment` the same way.
 
 ```bash
 sudo supervisorctl reread
@@ -50,16 +58,21 @@ sudo supervisorctl update
 
 ## Caddy
 
-Copy `etc/caddy/sweet-dreams.caddyfile.example` to your real Caddy sites directory, filling in the real domain. It's a plain reverse proxy to the Node process - no docroot, MagicMirror serves everything itself.
+Copy `etc/caddy/sweet-dreams.caddyfile.example` to your real Caddy sites directory, filling in the real domain. It's a plain reverse proxy to the Node process - no docroot, MagicMirror serves everything itself. HTTPS is required to install the app on tablets and keep their screen awake.
 
-## First deploy
+## Deployment
 
-`config/config.js` is a Deployer `shared_file` (see `deploy.maml`), symlinked into every release from `shared/` - but since it's not in the repo, there's nothing for Deployer to seed it from on a brand new host. Before the first `dep deploy`, create it by hand:
+Updating a plain install is `git pull && npm run install-mm` in the MagicMirror folder, and `git pull` in each module folder.
+
+[Deployer](https://deployer.org) can deploy MagicMirror² itself instead: copy `deploy.maml.example` to `deploy.maml` and fill in the host and paths. Each deploy fetches MagicMirror's latest release, runs `npm run install-mm`, then restarts the service (`sudo` must not ask for a password for that command).
+
+`config/` and `modules/` are shared between releases, in `shared/`. After the first `dep deploy`, add the Sweet Dreams files and the MMM-ProgressiveWebApp module there:
 
 ```bash
-mkdir -p {{deploy_path}}/shared/config
 cp config/config.js.example {{deploy_path}}/shared/config/config.js
+cp config/custom.css.example {{deploy_path}}/shared/config/custom.css
+cp config/sweet-dreams-*.png {{deploy_path}}/shared/config/
+git clone https://github.com/magicoli/MMM-ProgressiveWebApp.git {{deploy_path}}/shared/modules/MMM-ProgressiveWebApp
 ```
 
-Then edit that file for the real deployment (location, weather provider, etc.), same as the local `config/config.js` above.
-
+Then edit `config.js` for the real deployment and restart the service.

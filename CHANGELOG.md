@@ -1,5 +1,7 @@
 # Changelog
 
+## Unreleased
+
 ## 1.0.0
 
 - MagicMirror² 2.37.0 as an untouched npm dependency, in server-only mode

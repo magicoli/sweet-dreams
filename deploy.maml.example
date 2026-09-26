@@ -1,46 +1,48 @@
 {
-  # You can import other php or maml recipes.
-  # Import recipes directly from recipe/ folder.
+  # Deploys MagicMirror² itself: config/ and modules/ are shared between
+  # releases, they hold the local config and the third-party modules.
   import: [
     "recipe/common.php"
   ]
 
   config: {
-    repository: "https://github.com/example/example.git"
-    http_user: "deploy"
-    remote_user: "deploy"
-    identity_file: "~/.ssh/id_rsa"
+    repository: "https://github.com/MagicMirrorOrg/MagicMirror.git"
+    http_user: "www-data"
+    remote_user: "www-data"
     shared_files: [
-      "config/config.js"
-      "config/custom.css"
+    ]
+    shared_dirs: [
+      "config"
+      "modules"
     ]
   }
 
   # Hosts
   hosts: {
     "example.com": {
-      branch: "dev"
+      # master is MagicMirror's latest release
+      branch: "master"
       deploy_path: "~/domains/example.com/app"
     }
   }
 
   tasks: {
-    "magicmirror:install": [
-      { desc: "Install npm dependencies (magicmirror is one of them, pinned in package.json)" }
-      # Non-interactive SSH doesn't source .bashrc, so nvm's own PATH change
-      # never applies - source it explicitly first.
-      { run: "source .nvm/nvm.sh && cd {{release_path}} && npm install --omit=dev" }
+    "build": [
+      { cd: "{{release_path}}" }
+      { run: "source ~/.nvm/nvm.sh && npm install --omit=dev" }
+      { upload: { src: "lib/MagicMirror/config/", dest: "{{deploy_path}}/shared/config/" } }
+      { upload: { src: "lib/MagicMirror/modules/", dest: "{{deploy_path}}/shared/modules/" } }
     ]
 
-    "sweet-dreams:restart": [
-      { desc: "Restart the supervisor-managed MagicMirror process" }
-      { run: "sudo supervisorctl restart sweet-dreams" }
+    "reload": [
+        { run: "sudo systemctl reload php8.4-fpm" }
+        { run: "sudo systemctl restart sweet-dreams " }
     ]
   }
 
   after: {
-    "deploy:update_code": "magicmirror:install"
-    "deploy:publish": "sweet-dreams:restart"
+    "deploy:update_code": "build"
+    "deploy:publish": "reload"
     "deploy:failed": "deploy:unlock"
   }
 }
