@@ -1,10 +1,10 @@
 # Sweet Dreams
 
-![Latest Release](https://img.shields.io/github/v/release/magicoli/sweet-dreams?label=latest&include_prereleases)
-![Stable](https://img.shields.io/github/v/release/magicoli/sweet-dreams?label=stable&color=green)
+![Stable](https://img.shields.io/github/release/magicoli/sweet-dreams?label=stable&color=green&include_prereleases)
+![GitHub Tag](https://img.shields.io/github/tag/magicoli/sweet-dreams?label=latest&include_prereleases)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/magicoli/sweet-dreams/latest?label=dev)
 ![Node](https://img.shields.io/badge/node.js-22-blue)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-552b55)](LICENSE)
-![GitHub commits since latest release](https://img.shields.io/github/commits-since/magicoli/sweet-dreams/latest)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/magicoli/sweet-dreams/total)
 
 Tablet-based alternative for the legendary Sony Dream Machine ICF-CL70 2009.
