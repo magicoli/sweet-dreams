@@ -1,5 +1,5 @@
 #!/bin/sh
-# Installs MagicMirror² in lib/ with the MMM-ProgressiveWebApp module, and
+# Installs MagicMirror² in lib/ with the modules listed in modules.txt, and
 # creates its config and styles from config/ when missing.
 
 set -e
@@ -84,9 +84,19 @@ log Install MagicMirror²
 cd $MM_BASE_DIR
 npm run install-mm
 
-log Install MMM-ProgressiveWebApp
-cd $MM_BASE_DIR/modules/
-[ -d MMM-ProgressiveWebApp ] || git clone https://github.com/magicoli/MMM-ProgressiveWebApp
+if [ ! -f "$BASE_DIR/modules.txt" ]; then
+	log Create modules.txt from example
+	cp "$BASE_DIR/modules.txt.example" "$BASE_DIR/modules.txt"
+fi
+
+log Install modules listed in modules.txt
+grep -v '^[[:space:]]*#' "$BASE_DIR/modules.txt" | while read -r url; do
+	[ -n "$url" ] || continue
+	dir="$MM_MODULES_DIR/$(basename "$url" .git)"
+	[ -d "$dir" ] || git clone "$url" "$dir"
+	# Some modules have their own dependencies.
+	! grep -qs '"dependencies"' "$dir/package.json" || (cd "$dir" && npm install --omit=dev)
+done
 
 cd $MM_BASE_DIR
 

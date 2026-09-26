@@ -26,7 +26,7 @@ Sweet Dreams turns a spare tablet into a bedside clock. It is a recipe for a sta
 
 ## Installation
 
-Install MagicMirror² and the MMM-ProgressiveWebApp module:
+Install MagicMirror² and the modules listed in `modules.txt`:
 
 ```bash
 ./setup.sh

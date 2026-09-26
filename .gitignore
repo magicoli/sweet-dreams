@@ -86,3 +86,4 @@ storage/**
 /modules/**
 !/modules/README.md
 !/modules/MMM-ProgressiveWebApp/
+modules.txt

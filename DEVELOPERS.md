@@ -5,6 +5,7 @@
 Sweet Dreams is a recipe for a standard MagicMirror² install, not an application: no code, no build.
 
 - `config/`: files to copy into MagicMirror's `config/` folder (`config.js.example`, `custom.css.example`, app icons)
+- `modules.txt`: MagicMirror² modules installed by `setup.sh`, one git URL per line (created from `modules.txt.example` when missing)
 - `etc/`: example system configs, same structure as `/etc`
 - `deploy.maml.example`: Deployer config deploying MagicMirror² itself
 
